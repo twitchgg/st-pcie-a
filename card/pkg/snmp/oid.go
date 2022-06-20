@@ -125,10 +125,10 @@ func (oid OID_11D) Desc() string {
 func (sd *SnmpData) String() string {
 	switch sd.ValueType {
 	case gosnmp.OctetString:
-		return fmt.Sprintf("oid [%s],value: %v", sd.OID.Desc(), string(sd.Value.([]byte)))
+		return fmt.Sprintf("oid [%s][%s],value: %v", sd.OID.Desc(), sd.OID, string(sd.Value.([]byte)))
 	case gosnmp.Integer:
-		return fmt.Sprintf("oid [%s],value: %d", sd.OID.Desc(), sd.Value.(int))
+		return fmt.Sprintf("oid [%s][%s],value: %d", sd.OID.Desc(), sd.OID, sd.Value.(int))
 	default:
-		return fmt.Sprintf("oid [%s],type [%s], value: %v", sd.OID.Desc(), sd.ValueType.String(), sd.Value)
+		return fmt.Sprintf("oid [%s][%s],type [%s], value: %v", sd.OID.Desc(), sd.OID, sd.ValueType.String(), sd.Value)
 	}
 }

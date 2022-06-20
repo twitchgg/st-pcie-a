@@ -17,6 +17,6 @@ func (s *TrapServer) TrapHandler(pkg *gosnmp.SnmpPacket, addr *net.UDPAddr) {
 				Warnf("create snmp data failed: %s", err.Error())
 			continue
 		}
-		logrus.WithField("prefix", "trap.handler").Debug(data.String())
+		logrus.WithField("prefix", "trap.handler").Trace(data.String())
 	}
 }

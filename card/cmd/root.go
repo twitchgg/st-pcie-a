@@ -11,25 +11,34 @@ import (
 )
 
 var envs struct {
-	bindAddr      string
-	community     string
-	ntpServerAddr string
+	bindAddr        string
+	community       string
+	ntpServerAddr   string
+	certPath        string
+	trapGatewayAddr string
+	loggerLevel     string
 }
 
 func init() {
-	logrus.SetOutput(os.Stdout)
-	logrus.SetLevel(logrus.DebugLevel)
-	formatter := new(prefixed.TextFormatter)
-	logrus.SetFormatter(formatter)
+
 	flag.StringVar(&envs.bindAddr, "snmp-bind-addr",
 		"udp://127.0.0.1:1169", "SNMP binding addresss")
 	flag.StringVar(&envs.community, "snmp-community",
 		"1234qwer", "SNMP community string")
 	flag.StringVar(&envs.ntpServerAddr, "ntp-addr",
 		"udp://ntp1.aliyun.com:123", "NTP server address")
+	flag.StringVar(&envs.certPath, "cert-path",
+		"", "certificate path")
+	flag.StringVar(&envs.trapGatewayAddr, "trap-gw-addr",
+		"", "trap gateway server address")
 }
 
 func Execute() {
+	flag.Parse()
+	logrus.SetOutput(os.Stdout)
+	logrus.SetLevel(logrus.TraceLevel)
+	formatter := new(prefixed.TextFormatter)
+	logrus.SetFormatter(formatter)
 	serv, err := snmp.NewTrapServer(&snmp.TrapConfig{
 		BindAddrURI:        envs.bindAddr,
 		Community:          envs.community,
