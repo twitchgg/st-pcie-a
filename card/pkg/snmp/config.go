@@ -14,6 +14,13 @@ const (
 	TRANS_TCP
 )
 
+const (
+	CERT_EXT_KEY_MACHINE_ID = "1.1.1.1.1.1"
+	TRUSTED_CERT_CHAIN_NAME = "trusted.crt"
+	CLIENT_CERT_NAME        = "client.crt"
+	CLIENT_PRIVATE_KEY_NAME = "client.key"
+)
+
 func (t TransportType) String() string {
 	switch t {
 	case TRANS_UDP:
@@ -44,6 +51,9 @@ type TrapConfig struct {
 	ExponentialTimeout bool
 	MaxOids            int
 	Timeout            time.Duration
+	CertPath           string
+	ServerName         string
+	GatewayEndpoint    string
 }
 
 // Check check config

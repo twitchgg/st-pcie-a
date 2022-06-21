@@ -1,23 +1,34 @@
 package snmp
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"strconv"
 
+	"github.com/denisbrodbeck/machineid"
 	"github.com/gosnmp/gosnmp"
 	"github.com/sirupsen/logrus"
+	"ntsc.ac.cn/ta-registry/pkg/pb"
+	"ntsc.ac.cn/ta-registry/pkg/rpc"
 )
 
 // TrapServer trap server
 type TrapServer struct {
 	conf         *TrapConfig
 	trapListener *gosnmp.TrapListener
+	machineID    string
+	msc          pb.MonitorServiceClient
+	reporter     pb.MonitorService_ReportClient
 }
 
 func NewTrapServer(conf *TrapConfig) (*TrapServer, error) {
 	if conf == nil {
 		return nil, fmt.Errorf("not set trap server config")
+	}
+	machineID, err := machineid.ID()
+	if err != nil {
+		return nil, fmt.Errorf("generate machine id failed: %v", err)
 	}
 	if err := conf.Check(); err != nil {
 		return nil, fmt.Errorf("check config failed: %s", err.Error())
@@ -44,7 +55,8 @@ func NewTrapServer(conf *TrapConfig) (*TrapServer, error) {
 		return nil, fmt.Errorf("parse URI scheme failed")
 	}
 	trapServer := TrapServer{
-		conf: conf,
+		conf:      conf,
+		machineID: machineID,
 	}
 	trapListener := gosnmp.NewTrapListener()
 	trapListener.Params = gosnmp.Default
@@ -54,11 +66,30 @@ func NewTrapServer(conf *TrapConfig) (*TrapServer, error) {
 	trapListener.Params.Timeout = conf.Timeout
 	trapListener.OnNewTrap = trapServer.TrapHandler
 	trapServer.trapListener = trapListener
+
+	tlsConf, err := rpc.GetTlsConfig(machineID, conf.CertPath, conf.ServerName)
+	if err != nil {
+		return nil, fmt.Errorf("generate tls config failed: %v", err)
+	}
+	conn, err := rpc.DialRPCConn(&rpc.DialOptions{
+		RemoteAddr: conf.GatewayEndpoint,
+		TLSConfig:  tlsConf,
+	})
+	if err != nil {
+		return nil, fmt.Errorf(
+			"dial management grpc connection failed: %v", err)
+	}
+	trapServer.msc = pb.NewMonitorServiceClient(conn)
 	return &trapServer, nil
 }
 
 func (s *TrapServer) Start() chan error {
 	errChan := make(chan error, 1)
+	c, err := s.msc.Report(context.Background())
+	if err != nil {
+		errChan <- fmt.Errorf("failed to create report client: %v", err)
+	}
+	s.reporter = c
 	go s._startTrapServer(errChan)
 	return errChan
 }

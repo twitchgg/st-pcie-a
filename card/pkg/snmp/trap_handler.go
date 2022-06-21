@@ -1,10 +1,12 @@
 package snmp
 
 import (
+	"fmt"
 	"net"
 
 	"github.com/gosnmp/gosnmp"
 	"github.com/sirupsen/logrus"
+	"ntsc.ac.cn/ta-registry/pkg/pb"
 )
 
 func (s *TrapServer) TrapHandler(pkg *gosnmp.SnmpPacket, addr *net.UDPAddr) {
@@ -17,6 +19,14 @@ func (s *TrapServer) TrapHandler(pkg *gosnmp.SnmpPacket, addr *net.UDPAddr) {
 				Warnf("create snmp data failed: %s", err.Error())
 			continue
 		}
-		logrus.WithField("prefix", "trap.handler").Trace(data.String())
+		if err := s.reporter.Send(&pb.OIDRequest{
+			MachineID: s.machineID,
+			Oid:       string(data.OID),
+			ValueType: data.ValueType.String(),
+			Value:     fmt.Sprintf("%v", data.Value),
+		}); err != nil {
+			logrus.WithField("prefix", "trap.handler").
+				Errorf("failed to send snmp data: %v", err)
+		}
 	}
 }

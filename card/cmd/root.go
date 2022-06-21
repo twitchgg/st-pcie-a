@@ -15,6 +15,7 @@ var envs struct {
 	community       string
 	ntpServerAddr   string
 	certPath        string
+	servername      string
 	trapGatewayAddr string
 	loggerLevel     string
 }
@@ -28,9 +29,11 @@ func init() {
 	flag.StringVar(&envs.ntpServerAddr, "ntp-addr",
 		"udp://ntp1.aliyun.com:123", "NTP server address")
 	flag.StringVar(&envs.certPath, "cert-path",
-		"", "certificate path")
+		"/etc/ntsc/ta/certs", "certificate path")
+	flag.StringVar(&envs.servername, "trap-gw-servername",
+		"s1.monitor.ta.ntsc.ac.cn", "trap gateway server name")
 	flag.StringVar(&envs.trapGatewayAddr, "trap-gw-addr",
-		"", "trap gateway server address")
+		"tcp://localhost:1358", "trap gateway server address")
 }
 
 func Execute() {
@@ -44,6 +47,9 @@ func Execute() {
 		Community:          envs.community,
 		ExponentialTimeout: true,
 		Timeout:            time.Duration(time.Second * 3),
+		ServerName:         envs.servername,
+		CertPath:           envs.certPath,
+		GatewayEndpoint:    envs.trapGatewayAddr,
 	})
 	if err != nil {
 		logrus.WithField("prefix", "main").Fatal(err.Error())
