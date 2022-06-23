@@ -54,6 +54,7 @@ type TrapConfig struct {
 	CertPath           string
 	ServerName         string
 	GatewayEndpoint    string
+	HttpBindAddr       string
 }
 
 // Check check config

@@ -8,6 +8,7 @@ import (
 
 	"github.com/denisbrodbeck/machineid"
 	"github.com/gosnmp/gosnmp"
+	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
 	"ntsc.ac.cn/ta-registry/pkg/pb"
 	"ntsc.ac.cn/ta-registry/pkg/rpc"
@@ -20,6 +21,7 @@ type TrapServer struct {
 	machineID    string
 	msc          pb.MonitorServiceClient
 	reporter     pb.MonitorService_ReportClient
+	apiServer    *echo.Echo
 }
 
 func NewTrapServer(conf *TrapConfig) (*TrapServer, error) {
@@ -80,6 +82,10 @@ func NewTrapServer(conf *TrapConfig) (*TrapServer, error) {
 			"dial management grpc connection failed: %v", err)
 	}
 	trapServer.msc = pb.NewMonitorServiceClient(conn)
+	e := echo.New()
+	e.Debug = false
+	e.HideBanner = true
+	trapServer.apiServer = e
 	return &trapServer, nil
 }
 
@@ -91,7 +97,17 @@ func (s *TrapServer) Start() chan error {
 	}
 	s.reporter = c
 	go s._startTrapServer(errChan)
+	go s._startHttpServer(errChan)
 	return errChan
+}
+
+func (s *TrapServer) _startHttpServer(errChan chan error) {
+	logrus.WithField("prefix", "trap").
+		Infof("start http trap server with [%s]", s.conf.HttpBindAddr)
+	if err := s.apiServer.Start(s.conf.HttpBindAddr); err != nil {
+		errChan <- err
+		return
+	}
 }
 
 func (s *TrapServer) _startTrapServer(errChan chan error) {

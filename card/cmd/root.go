@@ -18,6 +18,7 @@ var envs struct {
 	servername      string
 	trapGatewayAddr string
 	loggerLevel     string
+	httpListener    string
 }
 
 func init() {
@@ -34,6 +35,8 @@ func init() {
 		"s1.monitor.ta.ntsc.ac.cn", "trap gateway server name")
 	flag.StringVar(&envs.trapGatewayAddr, "trap-gw-addr",
 		"tcp://localhost:1358", "trap gateway server address")
+	flag.StringVar(&envs.httpListener, "http-binding-addr",
+		"0.0.0.0:8787", "http binding port")
 }
 
 func Execute() {
@@ -50,6 +53,7 @@ func Execute() {
 		ServerName:         envs.servername,
 		CertPath:           envs.certPath,
 		GatewayEndpoint:    envs.trapGatewayAddr,
+		HttpBindAddr:       envs.httpListener,
 	})
 	if err != nil {
 		logrus.WithField("prefix", "main").Fatal(err.Error())
