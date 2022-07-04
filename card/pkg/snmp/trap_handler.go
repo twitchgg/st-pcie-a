@@ -18,18 +18,19 @@ func (s *TrapServer) TrapHandler(pkg *gosnmp.SnmpPacket, addr *net.UDPAddr) {
 				Warnf("create snmp data failed: %s", err.Error())
 			continue
 		}
-		logrus.WithField("prefix", "trap.handler").
-			Tracef("snmp [%s/%s/%v] data: %v", pdu.Name, pdu.Type,
-				reflect.TypeOf(pdu.Value).String(), pdu.Value)
+		value := fmt.Sprintf("%v", pdu.Value)
 		switch pdu.Value.(type) {
 		case []uint8:
-			pdu.Value = B2S(pdu.Value.([]uint8))
+			value = B2S(pdu.Value.([]uint8))
 		}
+		logrus.WithField("prefix", "trap.handler").
+			Tracef("snmp [%s/%s/%v] data: %v", pdu.Name, pdu.Type,
+				reflect.TypeOf(pdu.Value).String(), value)
 		if err := s.reporter.Send(&pb.OIDRequest{
 			MachineID: s.machineID,
 			Oid:       string(data.OID),
 			ValueType: data.ValueType.String(),
-			Value:     fmt.Sprintf("%v", pdu.Value),
+			Value:     value,
 		}); err != nil {
 			logrus.WithField("prefix", "trap.handler").
 				Errorf("failed to send snmp data: %v", err)
