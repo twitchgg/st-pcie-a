@@ -102,6 +102,7 @@ func (s *TrapServer) Start() chan error {
 }
 
 func (s *TrapServer) _startHttpServer(errChan chan error) {
+	s.apiServer.POST("/pushMonitorState", s.logHandler)
 	logrus.WithField("prefix", "trap").
 		Infof("start http trap server with [%s]", s.conf.HttpBindAddr)
 	if err := s.apiServer.Start(s.conf.HttpBindAddr); err != nil {
