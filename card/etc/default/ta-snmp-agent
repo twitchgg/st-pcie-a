@@ -1,0 +1,4 @@
+OPT_GW_ADDR=--trap-gw-addr="tcp://10.0.24.102:1358" 
+OPT_GW_SERVER_NAME=--trap-gw-servername="ntsc.ac.cn" 
+OPT_CERT_PATH=--cert-path="../../etc/certs" 
+OPT_LOGGER_LEVEL=--logger-level=TRACE

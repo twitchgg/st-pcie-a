@@ -1,0 +1,16 @@
+[Unit]
+Description=NTSC TAS snmp agent 
+Documentation=https://ntsc.ac.cn
+After=network-online.target local-fs.target remote-fs.target time-sync.target
+Wants=network-online.target local-fs.target remote-fs.target time-sync.target
+
+[Service]
+User=root
+Type=simple
+EnvironmentFile=/etc/default/ta-snmp-agent
+ExecStart=/usr/local/bin/ta-snmp-agent $OPT_GW_ADDR $OPT_GW_SERVER_NAME $OPT_CERT_PATH $OPT_LOGGER_LEVEL
+Restart=always
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
