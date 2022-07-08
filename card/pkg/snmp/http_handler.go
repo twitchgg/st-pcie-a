@@ -25,13 +25,12 @@ type resultLog struct {
 func (s *TrapServer) logHandler(c echo.Context) error {
 	var payload snmpLog
 	if err := (&echo.DefaultBinder{}).BindBody(c, &payload); err != nil {
-		return nil
+		return c.JSON(int(codes.OK), &resultLog{Result: "fail"})
 	}
-	fmt.Println(payload.ID, len(payload.Data))
 	for _, v := range payload.Data {
 		logrus.WithField("prefix", "trap.handler").
 			Tracef("http trap [%s/%s] data: %v", v.OID, v.Type, v.State)
-		if err := s.reporter.Send(&pb.OIDRequest{
+		if err := s.grpcEntry.reporter.Send(&pb.OIDRequest{
 			MachineID: s.machineID,
 			Oid:       v.OID,
 			ValueType: v.Type,

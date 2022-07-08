@@ -2,6 +2,7 @@ package snmp
 
 import (
 	"fmt"
+	"io"
 	"net"
 	"reflect"
 
@@ -23,15 +24,21 @@ func (s *TrapServer) TrapHandler(pkg *gosnmp.SnmpPacket, addr *net.UDPAddr) {
 		case []uint8:
 			value = B2S(pdu.Value.([]uint8))
 		}
+		if s.grpcEntry.reporter == nil {
+			continue
+		}
 		logrus.WithField("prefix", "trap.handler").
 			Tracef("snmp [%s/%s/%v] data: %v", pdu.Name, pdu.Type,
 				reflect.TypeOf(pdu.Value).String(), value)
-		if err := s.reporter.Send(&pb.OIDRequest{
+		if err := s.grpcEntry.reporter.Send(&pb.OIDRequest{
 			MachineID: s.machineID,
 			Oid:       string(data.OID),
 			ValueType: data.ValueType.String(),
 			Value:     value,
 		}); err != nil {
+			if err == io.EOF {
+				continue
+			}
 			logrus.WithField("prefix", "trap.handler").
 				Errorf("failed to send snmp data: %v", err)
 		}
