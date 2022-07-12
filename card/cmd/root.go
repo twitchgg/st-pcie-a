@@ -22,7 +22,6 @@ var envs struct {
 }
 
 func init() {
-
 	flag.StringVar(&envs.bindAddr, "snmp-bind-addr",
 		"udp://127.0.0.1:1169", "SNMP binding addresss")
 	flag.StringVar(&envs.community, "snmp-community",
@@ -37,12 +36,18 @@ func init() {
 		"tcp://localhost:1358", "trap gateway server address")
 	flag.StringVar(&envs.httpListener, "http-binding-addr",
 		"0.0.0.0:8787", "http binding port")
+	flag.StringVar(&envs.loggerLevel, "logger-level",
+		"DEBUG", "logger level")
 }
 
 func Execute() {
 	flag.Parse()
+	level, err := logrus.ParseLevel(envs.loggerLevel)
+	if err != nil {
+		logrus.WithField("prefix", "main").Fatal(err.Error())
+	}
 	logrus.SetOutput(os.Stdout)
-	logrus.SetLevel(logrus.TraceLevel)
+	logrus.SetLevel(level)
 	formatter := new(prefixed.TextFormatter)
 	logrus.SetFormatter(formatter)
 	serv, err := snmp.NewTrapServer(&snmp.TrapConfig{

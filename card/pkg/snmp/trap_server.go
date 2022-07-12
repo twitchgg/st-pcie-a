@@ -12,8 +12,10 @@ import (
 	"github.com/denisbrodbeck/machineid"
 	"github.com/gosnmp/gosnmp"
 	"github.com/labstack/echo/v4"
+	"github.com/robfig/cron"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
+	"ntsc.ac.cn/st-pcie-a/card/pkg/statistics"
 	"ntsc.ac.cn/ta-registry/pkg/pb"
 	"ntsc.ac.cn/ta-registry/pkg/rpc"
 )
@@ -25,6 +27,8 @@ type TrapServer struct {
 	machineID    string
 	apiServer    *echo.Echo
 	grpcEntry    *grpcEntry
+	hws          *statistics.HWstatistics
+	crontab      *cron.Cron
 }
 
 type grpcEntry struct {
@@ -78,6 +82,8 @@ func NewTrapServer(conf *TrapConfig) (*TrapServer, error) {
 		grpcEntry: &grpcEntry{
 			tlsConf: tlsConf,
 		},
+		hws:     statistics.NewHWStatistics(),
+		crontab: cron.New(),
 	}
 	trapListener := gosnmp.NewTrapListener()
 	trapListener.Params = gosnmp.Default
@@ -101,6 +107,7 @@ func (s *TrapServer) Start() chan error {
 	go s._startHealthChekck(errChan)
 	go s._startTrapServer(errChan)
 	go s._startHttpServer(errChan)
+	go s._startLocalTrap(errChan)
 	return errChan
 }
 func (s *TrapServer) _createRPCClient(errChan chan error) {
@@ -141,7 +148,6 @@ func (s *TrapServer) _createRPCClient(errChan chan error) {
 }
 
 func (s *TrapServer) _startHealthChekck(errChan chan error) {
-	fmt.Println("start check")
 	for {
 		resp, err := s.grpcEntry.hwc.Recv()
 		if err != nil || resp == nil {
@@ -153,6 +159,8 @@ func (s *TrapServer) _startHealthChekck(errChan chan error) {
 				s._createRPCClient(errChan)
 				continue
 			}
+			errChan <- fmt.Errorf("rpc failed: %v", err)
+			return
 		}
 		if resp.Status != pb.HealthCheckResponse_SERVING {
 			logrus.WithField("prefix", "trap").
