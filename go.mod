@@ -48,4 +48,4 @@ require (
 	google.golang.org/protobuf v1.28.0 // indirect
 )
 
-replace ntsc.ac.cn/ta-registry v0.0.0 => ../../ta-registry
+replace ntsc.ac.cn/ta-registry v0.0.0 => ../ta-registry
