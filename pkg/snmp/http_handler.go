@@ -6,7 +6,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
-	"ntsc.ac.cn/ta-registry/pkg/pb"
+	"ntsc.ac.cn/tas/tas-commons/pkg/pb"
 )
 
 type snmpLog struct {

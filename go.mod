@@ -10,8 +10,8 @@ require (
 	github.com/shirou/gopsutil/v3 v3.22.6
 	github.com/sirupsen/logrus v1.8.1
 	github.com/x-cray/logrus-prefixed-formatter v0.5.2
-	google.golang.org/grpc v1.46.2
-	ntsc.ac.cn/ta-registry v0.0.0
+	google.golang.org/grpc v1.48.0
+	ntsc.ac.cn/tas/tas-commons v0.0.0
 )
 
 require (
@@ -20,7 +20,7 @@ require (
 	github.com/go-ole/go-ole v1.2.6 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
-	github.com/google/uuid v1.1.2 // indirect
+	github.com/google/uuid v1.3.0 // indirect
 	github.com/labstack/gommon v0.3.1 // indirect
 	github.com/lufia/plan9stats v0.0.0-20211012122336-39d0f177ccd0 // indirect
 	github.com/mattn/go-colorable v0.1.12 // indirect
@@ -48,4 +48,4 @@ require (
 	google.golang.org/protobuf v1.28.0 // indirect
 )
 
-replace ntsc.ac.cn/ta-registry v0.0.0 => ../ta-registry
+replace ntsc.ac.cn/tas/tas-commons v0.0.0 => ../tas-commons

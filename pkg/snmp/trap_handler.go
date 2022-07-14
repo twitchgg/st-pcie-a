@@ -8,7 +8,7 @@ import (
 
 	"github.com/gosnmp/gosnmp"
 	"github.com/sirupsen/logrus"
-	"ntsc.ac.cn/ta-registry/pkg/pb"
+	"ntsc.ac.cn/tas/tas-commons/pkg/pb"
 )
 
 func (s *TrapServer) TrapHandler(pkg *gosnmp.SnmpPacket, addr *net.UDPAddr) {
